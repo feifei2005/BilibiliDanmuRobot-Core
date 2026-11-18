@@ -76,7 +76,7 @@ func Send(msg string, svcCtx *svc.ServiceContext, reply ...*entity.DanmuMsgTextR
 			logx.Infof("请求send失败:%s , %s", respdata.Msg, "弹幕内容包含敏感词，被服务器拒绝")
 		}
 		return nil
-	}, retry.Attempts(3), retry.Delay(1*time.Second))
+	}, retry.Attempts(3), retry.Delay(3500*time.Millisecond))
 	if err != nil {
 		logx.Error(err)
 	}

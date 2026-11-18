@@ -119,7 +119,8 @@ func (ws *wsHandler) ReloadConfig() error {
 			ctx.AnchorName = userinfo.Data.Info.Uname
 		}
 	}
-	ws.svc = ctx
+	// 原地更新，保持 startLogic 里各 goroutine 持有的 ServiceContext 指针不变
+	*ws.svc = *ctx
 
 	if roomChanged {
 		if err := ws.client.Start(); err != nil {
@@ -206,7 +207,7 @@ func (w *wsHandler) SayGoodbye() {
 			if err != nil {
 				logx.Errorf("下播弹幕发送失败：%s msg: %s", err, msgs)
 			}
-			time.Sleep(1 * time.Second) // 防止弹幕发送过快
+			time.Sleep(3500 * time.Millisecond) // B站实际约3秒一条，留0.5秒宽限
 		}
 	}
 }
