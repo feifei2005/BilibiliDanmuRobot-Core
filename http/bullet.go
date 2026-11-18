@@ -73,14 +73,15 @@ func Send(msg string, svcCtx *svc.ServiceContext, reply ...*entity.DanmuMsgTextR
 			return errors.New(respdata.Msg)
 		}
 		if respdata.Msg == "f" {
-			logx.Infof("请求send失败:%s , %s", respdata.Msg, "弹幕内容包含敏感词，被服务器拒绝")
+			logx.Infof("请求send失败:%s , %s", respdata.Msg, "弹幕被服务器拒绝，可能是敏感词/重复内容/频率限制")
+			return errors.New("弹幕被服务器拒绝: f")
 		}
 		return nil
 	}, retry.Attempts(3), retry.Delay(3500*time.Millisecond))
 	if err != nil {
 		logx.Error(err)
 	}
-	return nil
+	return err
 }
 func postWithFormData(method, url, ua, cookie string, postData *map[string]string) (int, []byte, error) {
 	body := new(bytes.Buffer)

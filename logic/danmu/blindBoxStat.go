@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"math/rand"
 	"regexp"
 	"strconv"
 
@@ -113,11 +114,13 @@ func pushBlindBoxResult(label string, ret *model.Result, err error, reply ...*en
 		ret = &model.Result{}
 	}
 	r := float64(ret.R) / float64(1000.0)
+	// 加个随机后缀，避免短时间内重复查询同一句被 B 站判重拒绝
+	suffix := []string{"~", "呀", "哦", ""}[rand.Intn(4)]
 	if ret.R > 0 {
-		logic.PushToBulletSender(fmt.Sprintf("%s共开%d个, 赚了＋%.2f元", label, ret.C, r), reply...)
+		logic.PushToBulletSender(fmt.Sprintf("%s共开%d个, 赚了＋%.2f元%s", label, ret.C, r, suffix), reply...)
 	} else if ret.R == 0 {
-		logic.PushToBulletSender(fmt.Sprintf("%s共开%d个, 没亏没赚!", label, ret.C), reply...)
+		logic.PushToBulletSender(fmt.Sprintf("%s共开%d个, 没亏没赚!%s", label, ret.C, suffix), reply...)
 	} else {
-		logic.PushToBulletSender(fmt.Sprintf("%s共开%d个, 亏了－%.2f元", label, ret.C, math.Abs(r)), reply...)
+		logic.PushToBulletSender(fmt.Sprintf("%s共开%d个, 亏了－%.2f元%s", label, ret.C, math.Abs(r), suffix), reply...)
 	}
 }
