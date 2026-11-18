@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
 
 	"github.com/xbclub/BilibiliDanmuRobot-Core/entity"
@@ -64,11 +63,11 @@ func (w *wsHandler) thankGifts() {
 			send := &entity.GuardBuyText{}
 			_ = json.Unmarshal([]byte(s), send)
 			if w.svc.Config.ThanksGiftUseAt {
-				logic.PushToGuardChan(send, &entity.DanmuMsgTextReplyInfo{
+				logic.PushToGuardChan(w.svc, send, &entity.DanmuMsgTextReplyInfo{
 					ReplyUid: strconv.Itoa(send.Data.Uid),
 				})
 			} else {
-				logic.PushToGuardChan(send)
+				logic.PushToGuardChan(w.svc, send)
 			}
 		}
 	})
@@ -81,12 +80,12 @@ func (w *wsHandler) thankGifts() {
 				data.Data.ContentSegments[1].Text == "投喂" &&
 				data.Data.ContentSegments[2].Text == "大航海盲盒" {
 
-				logic.PushToBulletSender(fmt.Sprintf("感谢 %s 的 %s", data.Data.ContentSegments[0].Text, data.Data.ContentSegments[4].Text))
+				logic.PushThanksBlindBox(w.svc, data.Data.ContentSegments[0].Text, data.Data.ContentSegments[4].Text)
 			} else if len(data.Data.ContentSegments) == 6 &&
 				data.Data.ContentSegments[2].Text == "投喂" &&
 				data.Data.ContentSegments[3].Text == "大航海盲盒" {
 
-				logic.PushToBulletSender(fmt.Sprintf("感谢 %s 的 %s", data.Data.ContentSegments[1].Text, data.Data.ContentSegments[5].Text))
+				logic.PushThanksBlindBox(w.svc, data.Data.ContentSegments[1].Text, data.Data.ContentSegments[5].Text)
 			}
 		}
 	})
