@@ -18,7 +18,7 @@ func DoDanmuProcess(msg string, svcCtx *svc.ServiceContext, reply ...*entity.Dan
 	// @帮助 打出来关键词
 	if strings.Compare("@帮助", msg) == 0 {
 		s := ""
-		if len(svcCtx.Config.TalkRobotCmd) > 0 {
+		if svcCtx.Config.RobotEnable && len(svcCtx.Config.TalkRobotCmd) > 0 {
 			s = fmt.Sprintf("发送带有 %s 的弹幕和我互动", svcCtx.Config.TalkRobotCmd)
 			logic.PushToBulletSender(s)
 			logic.PushToBulletSender("请尽情调戏我吧!")
@@ -38,6 +38,9 @@ func DoDanmuProcess(msg string, svcCtx *svc.ServiceContext, reply ...*entity.Dan
 	}
 	if strings.Compare("@我是谁", msg) == 0 {
 		logic.PushToBulletSender("本程序作者为@超凶一只花酱酱")
+	}
+	if !svcCtx.Config.RobotEnable {
+		return
 	}
 
 	result := checkIsAtMe(&msg, svcCtx)
