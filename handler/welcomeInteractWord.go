@@ -67,7 +67,7 @@ func (w *wsHandler) handleEnter(uid int64, uname string, medal *entity.FansMedal
 		return
 	}
 
-	if v, ok := w.svc.Config.WelcomeString[fmt.Sprint(uid)]; w.svc.Config.WelcomeSwitch && ok {
+	if v, ok := w.svc.Config.WelcomeString[fmt.Sprint(uid)]; w.svc.Config.WelcomeSwitch && ok && v != "" {
 		logic.PushToInterractChan(&logic.InterractData{Uid: uid, Msg: v})
 		return
 	}
@@ -80,7 +80,7 @@ func (w *wsHandler) handleEnter(uid int64, uname string, medal *entity.FansMedal
 		return
 	}
 
-	name := welcomeInteract(uname)
+	name := w.displayName(uid, uname)
 	if _, ok := w.svc.OtherSideUid[uid]; ok {
 		w.pushInteractMsg(uid, handleInterract(uid, name, w.svc))
 		return
@@ -179,7 +179,14 @@ func (w *wsHandler) tierWelcome(uid int64, uname string, medal *entity.FansMedal
 		return "", false
 	}
 	logx.Infof("三档欢迎: uid=%v uname=%v first=%v isFan=%v tier=%s", uid, uname, first, isFan, tier)
-	return renderWelcome(pool[rand.Intn(len(pool))], uname, medal, w.svc), true
+	return renderWelcome(pool[rand.Intn(len(pool))], uname, medal, w.svc, uid), true
+}
+
+func (w *wsHandler) displayName(uid int64, uname string) string {
+	if alias := w.svc.Config.UserNicknames[fmt.Sprint(uid)]; alias != "" {
+		return alias
+	}
+	return welcomeInteract(uname)
 }
 
 func (w *wsHandler) isFan(medal *entity.FansMedalInfo) bool {
@@ -192,12 +199,13 @@ func (w *wsHandler) isFan(medal *entity.FansMedalInfo) bool {
 	return medal.MedalLevel >= int64(w.svc.Config.WelcomeFanMedalLevel)
 }
 
-func renderWelcome(tpl, uname string, medal *entity.FansMedalInfo, svcCtx *svc.ServiceContext) string {
-	name := uname
-	if svcCtx.Config.WelcomeUseAt {
-		tpl = strings.ReplaceAll(tpl, "{at}", "")
+func renderWelcome(tpl, uname string, medal *entity.FansMedalInfo, svcCtx *svc.ServiceContext, uid int64) string {
+	alias := svcCtx.Config.UserNicknames[fmt.Sprint(uid)]
+	name := shortName(uname, 4, svcCtx.Config.DanmuLen)
+	if alias != "" {
+		name = alias
+		tpl = strings.ReplaceAll(tpl, "{at}", alias)
 	} else {
-		name = shortName(uname, 4, svcCtx.Config.DanmuLen)
 		tpl = strings.ReplaceAll(tpl, "{at}", "@"+name+" ")
 	}
 	medalName, medalLevel := "", ""

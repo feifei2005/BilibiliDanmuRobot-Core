@@ -26,7 +26,7 @@ func (w *wsHandler) welcomeEntryEffect() {
 			return
 		}
 
-		if v, ok := w.svc.Config.WelcomeString[fmt.Sprint(entry.Data.Uid)]; w.svc.Config.WelcomeSwitch && ok && w.svc.Config.EntryEffect {
+		if v, ok := w.svc.Config.WelcomeString[fmt.Sprint(entry.Data.Uid)]; w.svc.Config.WelcomeSwitch && ok && v != "" && w.svc.Config.EntryEffect {
 			//logic.PushToBulletSender(v)
 			logic.PushToInterractChan(&logic.InterractData{
 				Uid: entry.Data.Uid,

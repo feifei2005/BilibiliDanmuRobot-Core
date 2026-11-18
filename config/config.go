@@ -63,6 +63,7 @@ type Config struct {
 	FocusDanmu              []string          `json:",optional"`      // 关注的感谢列表
 	WelcomeSwitch           bool              `json:",default=false"` // 指定欢迎开关
 	WelcomeString           map[string]string `json:",optional"`      // 指定欢迎配置列表
+	UserNicknames           map[string]string `json:",optional"`      // UID -> 熟人昵称
 	WelcomeBlacklistWide    []string          `json:",optional"`      // 不欢迎黑名单模糊匹配
 	WelcomeBlacklist        []string          `json:",optional"`      // 不欢迎黑名单精确匹配
 

@@ -83,8 +83,8 @@ func TestRenderWelcomeAtMode(t *testing.T) {
 		Config:     &config.Config{WelcomeUseAt: true, DanmuLen: 40},
 		AnchorName: "家里云",
 	}
-	got := renderWelcome("欢迎呀~{at}恭喜你发现了{anchor}", "测试", nil, svcCtx)
-	if want := "欢迎呀~恭喜你发现了家里云"; got != want {
+	got := renderWelcome("欢迎呀~{at}恭喜你发现了{anchor}", "测试", nil, svcCtx, 0)
+	if want := "欢迎呀~@测试 恭喜你发现了家里云"; got != want {
 		t.Fatalf("renderWelcome() = %q, want %q", got, want)
 	}
 }
@@ -94,8 +94,22 @@ func TestRenderWelcomeTextMode(t *testing.T) {
 		Config:     &config.Config{WelcomeUseAt: false, DanmuLen: 40},
 		AnchorName: "家里云",
 	}
-	got := renderWelcome("哈喽{at}今天有没有更想{anchor}呀~", "测试", nil, svcCtx)
+	got := renderWelcome("哈喽{at}今天有没有更想{anchor}呀~", "测试", nil, svcCtx, 0)
 	if want := "哈喽@测试 今天有没有更想家里云呀~"; got != want {
+		t.Fatalf("renderWelcome() = %q, want %q", got, want)
+	}
+}
+
+func TestRenderWelcomeAlias(t *testing.T) {
+	svcCtx := &svc.ServiceContext{
+		Config: &config.Config{
+			DanmuLen:      40,
+			UserNicknames: map[string]string{"1": "小坏"},
+		},
+		AnchorName: "家里云",
+	}
+	got := renderWelcome("哈喽{at}今天有没有更想{anchor}呀~", "测试", nil, svcCtx, 1)
+	if want := "哈喽小坏今天有没有更想家里云呀~"; got != want {
 		t.Fatalf("renderWelcome() = %q, want %q", got, want)
 	}
 }
