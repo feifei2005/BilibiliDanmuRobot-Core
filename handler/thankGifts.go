@@ -2,7 +2,9 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/xbclub/BilibiliDanmuRobot-Core/entity"
 	"github.com/xbclub/BilibiliDanmuRobot-Core/logic"
@@ -21,7 +23,11 @@ func (w *wsHandler) thankGifts() {
 		if w.svc.Config.ThanksGift {
 			logx.Infof("收到礼物 uname=%s gift=%s num=%d price=%d total=%d",
 				send.Data.Uname, send.Data.GiftName, send.Data.Num, send.Data.Price, send.Data.TotalCoin)
-			logic.PushToGiftChan(send)
+			if send.Data.BlindGift.OriginalGiftName != "" {
+				pushBlindGiftThanks(send, w.svc.Config.ThanksGiftUseAt)
+			} else {
+				logic.PushToGiftChan(send)
+			}
 		}
 		danmu.SaveBlindBoxStat(send, w.svc)
 	})
@@ -53,7 +59,11 @@ func (w *wsHandler) thankGifts() {
 			if w.svc.Config.ThanksGift {
 				logx.Infof("收到礼物(V2) uname=%s gift=%s num=%d price=%d total=%d",
 					send.Data.Uname, send.Data.GiftName, send.Data.Num, send.Data.Price, send.Data.TotalCoin)
-				logic.PushToGiftChan(send)
+				if send.Data.BlindGift.OriginalGiftName != "" {
+					pushBlindGiftThanks(send, w.svc.Config.ThanksGiftUseAt)
+				} else {
+					logic.PushToGiftChan(send)
+				}
 			}
 			danmu.SaveBlindBoxStat(send, w.svc)
 		}
@@ -89,4 +99,30 @@ func (w *wsHandler) thankGifts() {
 			}
 		}
 	})
+}
+
+func pushBlindGiftThanks(send *entity.SendGiftText, useAt bool) {
+	msg := blindBoxGiftThanks(send)
+	if useAt {
+		logic.PushToBulletSender(msg, &entity.DanmuMsgTextReplyInfo{
+			ReplyUid: strconv.Itoa(int(send.Data.UID)),
+		})
+	} else {
+		logic.PushToBulletSender(msg)
+	}
+}
+
+func blindBoxGiftThanks(send *entity.SendGiftText) string {
+	box := send.Data.BlindGift.OriginalGiftName
+	if !strings.Contains(box, "盲盒") {
+		box += "盲盒"
+	}
+	profit := (send.Data.Price - send.Data.BlindGift.OriginalGiftPrice) * send.Data.Num
+	if profit > 0 {
+		return fmt.Sprintf("感谢%s赠送的%s，爆出%s，血赚了%d电池", send.Data.Uname, box, send.Data.GiftName, profit)
+	}
+	if profit < 0 {
+		return fmt.Sprintf("感谢%s赠送的%s，爆出%s，血亏了%d电池", send.Data.Uname, box, send.Data.GiftName, -profit)
+	}
+	return fmt.Sprintf("感谢%s赠送的%s，爆出%s，没赚没亏", send.Data.Uname, box, send.Data.GiftName)
 }
